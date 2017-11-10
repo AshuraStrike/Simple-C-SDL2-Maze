@@ -7,19 +7,24 @@
 #include "Levels.h"
 using namespace std;
 int main(int argc, char **argv){
-    int f,c,colision,cscore=0,salir=0,seleccion=0,plusFlag=0,winnerX,winnerY;
-    int mapa[15][20];
+    int f,c,collition,cscore=0,exitFlag=0,selection=0,plusFlag=0,winnerX,winnerY;
+    int lvlMap[15][20];
     char charScore[5],charTime[6];
     float time=30.0;
     SDL_Surface *scoring,*textScore,*timing,*textTime,*plusTime;
     SDL_Rect rect,player,next_player,rectVict,rectScoring,rectScore,rectTime,rectTiming,lastLine,rectplus;
+    SDL_Color black,white,green;
+    TTF_Font *font=TTF_OpenFont("abg.ttf",40);
+    Mix_Music *music;
+    SDL_Event event;
+
     for(f=0;f<15;f++){
         for(c=0;c<20;c++){
-            mapa[f][c]=mapa_1[f][c];
-            if(mapa[f][c]==-1){
+            lvlMap[f][c]=lvlMap_1[f][c];
+            if(lvlMap[f][c]==-1){
                 player.x=32*c;
                 player.y=32*f;
-            }else if(mapa[f][c]==IMG_FLAG){
+            }else if(lvlMap[f][c]==IMG_FLAG){
                 winnerX=32*c;
                 winnerY=32*f;
             }
@@ -52,43 +57,40 @@ int main(int argc, char **argv){
     lastLine.w=640;
     lastLine.h=40;
     startup();
-    SDL_Color nigga,white,weed;
-    nigga.r=0x0;
-    nigga.g=0x0;
-    nigga.b=0x0;
+
+    black.r=0x0;
+    black.g=0x0;
+    black.b=0x0;
     white.r=0xFF;
     white.g=0xFF;
     white.b=0xFF;
-    weed.r=0x00;
-    weed.g=0xFF;
-    weed.b=0x00;
+    green.r=0x00;
+    green.g=0xFF;
+    green.b=0x00;
     if(TTF_Init())
     {
-        cout<<"No fuentes"<<endl;
+        cout<<"No fonts"<<endl;
     }
-    TTF_Font *fuente=TTF_OpenFont("abg.ttf",40);
-    if(fuente==NULL)
+    if(font==NULL)
     {
-        cout<<"No cargo fuente"<<endl;
+        cout<<"No font loaded"<<endl;
     }
-    textScore=TTF_RenderUTF8_Shaded(fuente,"Score: ",white,nigga);
-    textTime=TTF_RenderUTF8_Shaded(fuente,"Time: ",white,nigga);
-    plusTime=TTF_RenderUTF8_Blended(fuente,"+10 secs",weed);
-    Mix_Music *musica;
-    musica=Mix_LoadMUS("unique.mp3");
-    if(musica==NULL)
+    textScore=TTF_RenderUTF8_Shaded(font,"Score: ",white,black);
+    textTime=TTF_RenderUTF8_Shaded(font,"Time: ",white,black);
+    plusTime=TTF_RenderUTF8_Blended(font,"+10 secs",green);
+    music=Mix_LoadMUS("unique.mp3");
+    if(music==NULL)
     {
-        cout<<"No pudo cargar musica"<<endl;
+        cout<<"No music loaded"<<endl;
     }
-    SDL_Event evento;
-    seleccion=characterSelection(fuente,nigga);
-    Mix_PlayMusic(musica,-1);
+    selection=characterSelection(font,black);
+    Mix_PlayMusic(music,-1);
     do{
-        while (SDL_PollEvent (&evento)){
-            if (evento.type == SDL_QUIT) salir = 1;
-            if(evento.type==SDL_KEYDOWN)
+        while (SDL_PollEvent (&event)){
+            if (event.type == SDL_QUIT) exitFlag = 1;
+            if(event.type==SDL_KEYDOWN)
             {
-                switch (evento.key.keysym.sym)
+                switch (event.key.keysym.sym)
                 {
                 case SDLK_UP:
                     next_player.y-=32;
@@ -106,38 +108,39 @@ int main(int argc, char **argv){
                     break;
                 }
             }
-            colision=0;
-            if(mapa[next_player.y/32][next_player.x/32]==IMG_BLOCK)
+            collition=0;
+            if(lvlMap[next_player.y/32][next_player.x/32]==IMG_BLOCK)
             {
-                colision=1;
+                collition=1;
             }
-            if(colision==0)
+            if(collition==0)
             {
                 player.x=next_player.x;
                 player.y=next_player.y;
             }
 
-        if(mapa[next_player.y/32][next_player.x/32]==IMG_COIN)
+        if(lvlMap[next_player.y/32][next_player.x/32]==IMG_COIN)
         {
-            Mix_PlayChannel(-1,sonidos[SOUND_COIN],0);
+            Mix_PlayChannel(-1,sounds[SOUND_COIN],0);
             cscore+=100;
-            mapa[player.y/32][player.x/32]=-1;
+            lvlMap[player.y/32][player.x/32]=-1;
         }
         //////////////////////////////////////////////////////////////
-        else if(mapa[next_player.y/32][next_player.x/32]==IMG_CLOCK){
+        else if(lvlMap[next_player.y/32][next_player.x/32]==IMG_CLOCK){
             time+=10;
             plusFlag=1;
-            mapa[player.y/32][player.x/32]=-1;
-            SDL_BlitSurface(plusTime,NULL,pantalla,&rectplus);
+            lvlMap[player.y/32][player.x/32]=-1;
+            SDL_BlitSurface(plusTime,NULL,screen,&rectplus);
         }
         }
-        itoa(cscore,charScore,10);
-        scoring=TTF_RenderUTF8_Shaded(fuente,charScore,white,nigga);
+
+        //itoa(cscore,charScore,10);
+        scoring=TTF_RenderUTF8_Shaded(font,charScore,white,black);
         sprintf(charTime,"%6.2f",time);
-        timing=TTF_RenderUTF8_Shaded(fuente,charTime,white,nigga);
+        timing=TTF_RenderUTF8_Shaded(font,charTime,white,black);
         next_player.x=player.x;
         next_player.y=player.y;
-        SDL_FillRect(pantalla,NULL,0xFF);
+        SDL_FillRect(screen,NULL,0xFF);
 
         for(f=0; f<15; f++)
         {
@@ -145,63 +148,56 @@ int main(int argc, char **argv){
             {
                 rect.x=c*32;
                 rect.y=f*32;
-                if(mapa[f][c]!=-1)
+                if(lvlMap[f][c]!=-1)
                 {
-                    SDL_BlitSurface(imagenes[(mapa[f][c])],NULL,pantalla,&rect);
+                    SDL_BlitSurface(images[(lvlMap[f][c])],NULL,screen,&rect);
                 }
             }
         }
-        SDL_BlitSurface(imagenes[seleccion],NULL,pantalla,&player);
-        SDL_FillRect(pantalla,&lastLine,0);
-        SDL_BlitSurface(textScore,NULL,pantalla,&rectScore);
-        SDL_BlitSurface(scoring,NULL,pantalla,&rectScoring);
-        SDL_BlitSurface(textTime,NULL,pantalla,&rectTime);
-        SDL_BlitSurface(timing,NULL,pantalla,&rectTiming);
+        SDL_BlitSurface(images[selection],NULL,screen,&player);
+        SDL_FillRect(screen,&lastLine,0);
+        SDL_BlitSurface(textScore,NULL,screen,&rectScore);
+        SDL_BlitSurface(scoring,NULL,screen,&rectScoring);
+        SDL_BlitSurface(textTime,NULL,screen,&rectTime);
+        SDL_BlitSurface(timing,NULL,screen,&rectTiming);
         SDL_FreeSurface(scoring);
         SDL_FreeSurface(timing);
         if(player.x==winnerX&&player.y==winnerY)
         {
-            SDL_BlitSurface(imagenes[IMG_VICTORIA],NULL,pantalla,&rectVict);
+            SDL_BlitSurface(images[IMG_VICTORIA],NULL,screen,&rectVict);
             Mix_PauseMusic();
-            salir=1;
+            exitFlag=1;
         }else{
             cscore-=7;
             time-=0.1;
         }
         if(time<=0){
-            SDL_BlitSurface(imagenes[IMG_DERROTA],NULL,pantalla,&rectVict);
+            SDL_BlitSurface(images[IMG_DERROTA],NULL,screen,&rectVict);
             Mix_PauseMusic();
-            salir=1;
+            exitFlag=1;
         }
         if(plusFlag>0){
             plusFlag++;
-        SDL_BlitSurface(plusTime,NULL,pantalla,&rectplus);
+        SDL_BlitSurface(plusTime,NULL,screen,&rectplus);
         if(plusFlag==6){
             plusFlag=0;
         }
     }
-        SDL_UpdateWindowSurface(ventana);
+        SDL_UpdateWindowSurface(window);
         SDL_Delay(100);
     }
 
-    while (!salir);
-    salir=0;
-    /*Mix_Music *scream;
-    scream=Mix_LoadMUS("maiga.mp3");
-    Mix_PlayMusic(scream,0);
-    SDL_Surface *imgScream;
-    imgScream=IMG_Load("maiga.png");*
-    player.x=0;
-    player.y=0;*/
+    while (!exitFlag);
+    exitFlag=0;
+
     do{
-        while(SDL_PollEvent(&evento)){
-            if(evento.type == SDL_QUIT){
-                salir=1;
+        while(SDL_PollEvent(&event)){
+            if(event.type == SDL_QUIT){
+                exitFlag=1;
             }
         }
-        //SDL_BlitSurface(imgScream,NULL,pantalla,&player);
-        SDL_UpdateWindowSurface(ventana);
+        SDL_UpdateWindowSurface(window);
         SDL_Delay(1000);
-    }while(!salir);
+    }while(!exitFlag);
     return 0;
 }

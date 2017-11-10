@@ -7,8 +7,8 @@ enum{
     SOUND_MBOX,
     NUM_SOUNDS
 };
-Mix_Chunk *sonidos[NUM_SOUNDS];
-const char * nombres_sonidos[NUM_SOUNDS]={
+Mix_Chunk *sounds[NUM_SOUNDS];
+const char * names_sounds[NUM_SOUNDS]={
     "coin.wav",
     "Pswitch.wav",
     "HintBlock.wav",
@@ -25,10 +25,10 @@ enum{
     IMG_VICTORIA,
     IMG_DERROTA,
     IMG_CLOCK,
-    NUM_IMAGENES
+    NUM_IMAGES
 };
-SDL_Surface *imagenes[NUM_IMAGENES];
-const char *nombres_imagenes[NUM_IMAGENES]={
+SDL_Surface *images[NUM_IMAGES];
+const char *names_images[NUM_IMAGES]={
     "ichigo.png",
     "kira.png",
     "goku.png",
@@ -41,46 +41,46 @@ const char *nombres_imagenes[NUM_IMAGENES]={
     "loseA.bmp",
     "clock.png",
 };
-SDL_Surface *pantalla;
-SDL_Window *ventana;
+SDL_Surface *screen;
+SDL_Window *window;
 void startup(void){
-    SDL_Surface *carga;
+    SDL_Surface *load;
     int i;
     if(SDL_Init(SDL_INIT_VIDEO)){
             cout<<"No video"<<endl;
     }
-    ventana=SDL_CreateWindow("MAZE",SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,640,520,0);
-    if(ventana==NULL){
-        cout<<"No ventana"<<endl;
+    window=SDL_CreateWindow("MAZE",SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,640,520,0);
+    if(window==NULL){
+        cout<<"No window"<<endl;
     }
-    pantalla = SDL_GetWindowSurface(ventana);
-    if (pantalla==NULL){
-        cout<<"No pude la segunda vez"<<endl;
+    screen = SDL_GetWindowSurface(window);
+    if (screen==NULL){
+        cout<<"No windows surface"<<endl;
     }
-    for(i=0;i<NUM_IMAGENES;i++){
-        carga=IMG_Load(nombres_imagenes[i]);
-        if(carga==NULL){
-            cout<<"No cargo imagen "<<nombres_imagenes[i]<<endl;
+    for(i=0;i<NUM_IMAGES;i++){
+        load=IMG_Load(names_images[i]);
+        if(load==NULL){
+            cout<<"No image loaded "<<names_images[i]<<endl;
         }
-        imagenes[i]=carga;
+        images[i]=load;
     }
     if(SDL_InitSubSystem(SDL_INIT_AUDIO)<0){
-        cout<<"Audio no inicializado"<<endl;
+        cout<<"Audio not initialized"<<endl;
     }
     if(Mix_OpenAudio(44100,AUDIO_S16,2,512)<0){
-        cout<<"No pudo ajustar sonido de salida"<<endl;
+        cout<<"No output sound"<<endl;
     }else{
         Mix_AllocateChannels(5);
     }
-    Mix_Chunk *carga_s;
+    Mix_Chunk *load_s;
     for(i=0;i<NUM_SOUNDS;i++){
-        carga_s=Mix_LoadWAV(nombres_sonidos[i]);
-        if(carga_s==NULL){cout<<"No cargó audio"<<nombres_sonidos[i]<<endl;
+        load_s=Mix_LoadWAV(names_sounds[i]);
+        if(load_s==NULL){cout<<"No audio loaded"<<names_sounds[i]<<endl;
         }
-        sonidos[i]=carga_s;
+        sounds[i]=load_s;
     }
 }
-int mapa_1[15][20]={
+int lvlMap_1[15][20]={
     {IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,
     IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK},
     {IMG_BLOCK,IMG_COIN,IMG_COIN,IMG_COIN,IMG_BLOCK,IMG_COIN,IMG_COIN,IMG_COIN,IMG_COIN,IMG_COIN,
@@ -112,7 +112,7 @@ int mapa_1[15][20]={
     {IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,
     IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK}
 };
-int characterSelection(TTF_Font *fuente,SDL_Color nigga){
+int characterSelection(TTF_Font *font,SDL_Color black){
     SDL_Surface *characterSelect;
     SDL_Event evento;
     SDL_Rect player,rectSelect;
@@ -120,7 +120,7 @@ int characterSelection(TTF_Font *fuente,SDL_Color nigga){
     rectSelect.h=128;
     rectSelect.w=128;
     rectSelect.y=196;
-    characterSelect=TTF_RenderUTF8_Blended(fuente,"Select your character:",nigga);
+    characterSelect=TTF_RenderUTF8_Blended(font,"Select your character:",black);
     do{
         while(SDL_PollEvent(&evento))
         {
@@ -135,7 +135,7 @@ int characterSelection(TTF_Font *fuente,SDL_Color nigga){
                     {
                         seleccion=4;
                     }
-                    Mix_PlayChannel(-1,sonidos[SOUND_PSWITCH],0);
+                    Mix_PlayChannel(-1,sounds[SOUND_PSWITCH],0);
                     break;
                 case SDLK_RIGHT:
                     seleccion+=1;
@@ -143,39 +143,39 @@ int characterSelection(TTF_Font *fuente,SDL_Color nigga){
                     {
                         seleccion=0;
                     }
-                    Mix_PlayChannel(-1,sonidos[SOUND_PSWITCH],0);
+                    Mix_PlayChannel(-1,sounds[SOUND_PSWITCH],0);
                     break;
                 case SDLK_RETURN:
-                    Mix_PlayChannel(-1,sonidos[SOUND_MBOX],0);
+                    Mix_PlayChannel(-1,sounds[SOUND_MBOX],0);
                     salir=1;
                     break;
                 }
             }
             player.x=98;
             player.y=100;
-            SDL_FillRect(pantalla,NULL,0x00FFFF);
-            SDL_BlitSurface(characterSelect,NULL,pantalla,&player);
+            SDL_FillRect(screen,NULL,0x00FFFF);
+            SDL_BlitSurface(characterSelect,NULL,screen,&player);
             player.x=48;
             player.y=244;
             rectSelect.x=128*seleccion;
-            SDL_FillRect(pantalla,&rectSelect,0x0000FF);
-            SDL_BlitSurface(imagenes[0],NULL,pantalla,&player);
+            SDL_FillRect(screen,&rectSelect,0x0000FF);
+            SDL_BlitSurface(images[0],NULL,screen,&player);
             player.x+=128;
-            SDL_BlitSurface(imagenes[1],NULL,pantalla,&player);
+            SDL_BlitSurface(images[1],NULL,screen,&player);
             player.x+=128;
-            SDL_BlitSurface(imagenes[2],NULL,pantalla,&player);
+            SDL_BlitSurface(images[2],NULL,screen,&player);
             player.x+=128;
-            SDL_BlitSurface(imagenes[3],NULL,pantalla,&player);
+            SDL_BlitSurface(images[3],NULL,screen,&player);
             player.x+=128;
-            SDL_BlitSurface(imagenes[4],NULL,pantalla,&player);
+            SDL_BlitSurface(images[4],NULL,screen,&player);
             player.x+=128;
-            SDL_UpdateWindowSurface(ventana);
+            SDL_UpdateWindowSurface(window);
             SDL_WaitEvent(&evento);
         }
     }while(!salir);
     return seleccion;
 }
-const int mapa_2[15][20]={
+const int lvlMap_2[15][20]={
     {IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK,IMG_BLOCK},
     {IMG_BLOCK,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,IMG_BLOCK},
     {IMG_BLOCK,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,IMG_BLOCK},
